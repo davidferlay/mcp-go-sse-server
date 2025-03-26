@@ -361,16 +361,26 @@ func handleNotification(
 func main() {
 	var transport string
 	var port string
+	var baseURL string
+	var omitPort bool
 	flag.StringVar(&transport, "transport", "stdio", "Transport type (stdio or sse)")
 	flag.StringVar(&port, "port", "3001", "Port to run the MCP server on.")
+	flag.StringVar(&baseURL, "baseurl", "http://localhost", "Base URL for the server.")
+	flag.BoolVar(&omitPort, "omitPort", false, "Not append port to base URL. Useful when server is served through a domain name.")
 	flag.Parse()
 
 	mcpServer := NewMCPServer()
 
 	// Only check for "sse" since stdio is the default
 	if transport == "sse" {
-		sseServer := server.NewSSEServer(mcpServer, server.WithBaseURL("http://localhost:"+port))
-		log.Printf("SSE server listening on:", port)
+		var fullBaseURL string
+		if omitPort {
+			fullBaseURL = baseURL
+		} else {
+			fullBaseURL = baseURL + ":" + port
+		}
+		sseServer := server.NewSSEServer(mcpServer, server.WithBaseURL(fullBaseURL))
+		log.Printf("SSE server listening on %s", fullBaseURL)
 		if err := sseServer.Start(":" + port); err != nil {
 			log.Fatalf("Server error: %v", err)
 		}
