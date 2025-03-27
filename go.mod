@@ -1,4 +1,4 @@
-module mcp-golang-http-server
+module mcp-go-sse-server
 
 go 1.23.1
 
